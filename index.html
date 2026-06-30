@@ -8,8 +8,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
         :root {
-            --bg: #0a0a1f;
+            --bg: #0d0d1f;
             --accent: #00ff9d;
+            --dark: #1a1a2e;
+            --player-bg: #16213e;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -24,19 +26,19 @@
         }
         
         header {
-            background: #1a1a2e;
+            background: #16213e;
             padding: 20px;
             text-align: center;
             border-bottom: 4px solid var(--accent);
         }
         
-        h1 { font-size: 2.3rem; text-shadow: 0 0 15px var(--accent); }
+        h1 { font-size: 2.2rem; text-shadow: 0 0 15px var(--accent); }
         
         .container { display: flex; flex: 1; overflow: hidden; }
         
         .sidebar {
-            width: 300px;
-            background: #1a1a2e;
+            width: 280px;
+            background: #16213e;
             padding: 20px;
             border-right: 4px solid var(--accent);
             display: flex;
@@ -48,7 +50,7 @@
         input {
             flex: 1;
             padding: 14px;
-            background: #16213e;
+            background: #0f1629;
             border: 2px solid var(--accent);
             color: white;
         }
@@ -66,7 +68,7 @@
         
         .participants-list {
             flex: 1;
-            background: #16213e;
+            background: #0f1629;
             border: 2px solid var(--accent);
             padding: 10px;
             overflow-y: auto;
@@ -82,86 +84,96 @@
         
         .remove-btn { background: #ff3366; color: white; padding: 2px 8px; font-size: 0.8rem; }
         
-        .main-area { flex: 1; padding: 30px 20px; overflow: auto; }
+        .main-area { flex: 1; padding: 30px 20px; overflow: auto; background: #0d0d1f; }
         
         .bracket {
-            display: inline-flex;
-            gap: 50px;
+            display: flex;
+            gap: 60px;
             position: relative;
         }
         
         .round {
             display: flex;
             flex-direction: column;
-            gap: 45px;
+            gap: 60px;
             position: relative;
         }
         
         .round-label {
             color: var(--accent);
             text-align: center;
-            margin-bottom: 20px;
-            font-size: 1rem;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
         }
         
         .match {
             position: relative;
-            width: 240px;
+            width: 260px;
         }
         
         .player {
-            background: #1e2a4d;
-            border: 2px solid var(--accent);
-            padding: 12px 15px;
-            margin: 8px 0;
+            background: var(--player-bg);
+            border: 3px solid #334466;
+            padding: 14px 16px;
+            margin: 10px 0;
             cursor: pointer;
             transition: all 0.2s;
-            min-height: 48px;
+            font-size: 1.05rem;
+            min-height: 54px;
             display: flex;
             align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
         
-        .player:hover { background: #2a3a66; }
+        .player:hover { border-color: var(--accent); }
         .player.winner { 
-            background: var(--accent); 
+            background: #00ff9d; 
             color: #0a0a1f; 
-            font-weight: bold; 
-            border-color: #fff;
+            border-color: #00ff9d;
+            box-shadow: 0 0 15px #00ff9d;
         }
-        .player.bye { color: #7777aa; font-style: italic; }
+        .player.bye { 
+            color: #8888cc; 
+            font-style: italic; 
+            border-color: #555577;
+        }
         
         /* Bracket Lines */
         .match::after {
             content: '';
             position: absolute;
-            height: 2px;
+            height: 3px;
             background: var(--accent);
-            opacity: 0.6;
-            right: -50px;
+            opacity: 0.7;
+            right: -55px;
             top: 50%;
-            width: 50px;
+            width: 55px;
         }
         
         .round:not(:last-child) .match:not(:last-child)::before {
             content: '';
             position: absolute;
-            width: 2px;
+            width: 3px;
             background: var(--accent);
-            opacity: 0.6;
-            right: -50px;
+            opacity: 0.7;
+            right: -55px;
             top: 50%;
-            height: calc(50% + 55px);
+            height: calc(50% + 65px);
         }
         
         .champion {
-            margin-top: 60px;
+            margin-top: 80px;
             text-align: center;
-            font-size: 2.8rem;
+            font-size: 3rem;
             color: var(--accent);
-            text-shadow: 0 0 30px var(--accent);
+            text-shadow: 0 0 40px var(--accent);
         }
         
-        .empty-state { text-align: center; padding: 120px 40px; color: #555; }
+        .empty-state { 
+            text-align: center; 
+            padding: 140px 40px; 
+            color: #666; 
+        }
     </style>
 </head>
 <body>
@@ -188,14 +200,14 @@
         </div>
         
         <div class="main-area">
-            <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 20px;">
                 <button onclick="resetTournament()" id="reset-btn" style="display:none">NEW TOURNAMENT</button>
                 <button onclick="undoLast()" id="undo-btn" style="display:none">UNDO LAST</button>
             </div>
             
             <div id="bracket-container">
                 <div class="empty-state">
-                    <h2>Add names → Generate Bracket</h2>
+                    <h2>Add names on the left<br>then click GENERATE BRACKET</h2>
                 </div>
             </div>
             
@@ -264,7 +276,6 @@
             
             while (currentPlayers.length > 1) {
                 const matches = [];
-                
                 for (let i = 0; i < currentPlayers.length; i += 2) {
                     if (i + 1 < currentPlayers.length) {
                         matches.push({
@@ -280,12 +291,10 @@
                         });
                     }
                 }
-                
                 tournament.rounds.push({
                     name: getRoundName(tournament.rounds.length, shuffled.length),
                     matches: matches
                 });
-                
                 currentPlayers = new Array(Math.ceil(currentPlayers.length / 2)).fill(null);
             }
             
@@ -325,13 +334,16 @@
                     const p1 = createPlayerEl(match.player1, match.winner === match.player1, () => pickWinner(rIdx, mIdx, 0));
                     const vs = document.createElement('div');
                     vs.style.textAlign = 'center';
-                    vs.style.color = '#555';
-                    vs.style.margin = '4px 0';
+                    vs.style.color = '#666';
+                    vs.style.margin = '6px 0';
+                    vs.style.fontSize = '0.8rem';
                     vs.textContent = 'VS';
                     
                     const p2 = createPlayerEl(match.player2, match.winner === match.player2, () => pickWinner(rIdx, mIdx, 1));
                     
-                    matchDiv.append(p1, vs, p2);
+                    matchDiv.appendChild(p1);
+                    matchDiv.appendChild(vs);
+                    matchDiv.appendChild(p2);
                     roundDiv.appendChild(matchDiv);
                 });
                 
@@ -348,7 +360,7 @@
             
             if (!player) {
                 el.textContent = "???";
-                el.style.opacity = "0.3";
+                el.style.opacity = "0.4";
                 return el;
             }
             
@@ -370,7 +382,6 @@
             
             match.winner = side === 0 ? match.player1 : match.player2;
             
-            // Advance winner only to the next round
             if (roundIdx + 1 < tournament.rounds.length) {
                 const nextMatch = tournament.rounds[roundIdx + 1].matches[Math.floor(matchIdx / 2)];
                 if (nextMatch) {
@@ -387,10 +398,10 @@
 
         function checkChampion() {
             if (!tournament?.rounds.length) return;
-            const finalMatch = tournament.rounds[tournament.rounds.length - 1].matches[0];
-            if (finalMatch?.winner) {
+            const final = tournament.rounds[tournament.rounds.length - 1].matches[0];
+            if (final?.winner) {
                 document.getElementById('champion-display').innerHTML = `
-                    <div class="champion">🏆 CHAMPION 🏆<br>${finalMatch.winner.name}</div>`;
+                    <div class="champion">🏆 ${final.winner.name} 🏆</div>`;
                 document.getElementById('champion-display').style.display = 'block';
             }
         }
