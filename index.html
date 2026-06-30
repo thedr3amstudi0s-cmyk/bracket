@@ -30,7 +30,7 @@
             border-bottom: 4px solid var(--accent);
         }
         
-        h1 { font-size: 2.4rem; text-shadow: 0 0 15px var(--accent); }
+        h1 { font-size: 2.3rem; text-shadow: 0 0 15px var(--accent); }
         
         .container { display: flex; flex: 1; overflow: hidden; }
         
@@ -51,7 +51,6 @@
             background: #16213e;
             border: 2px solid var(--accent);
             color: white;
-            font-family: inherit;
         }
         
         button {
@@ -85,51 +84,43 @@
         
         .main-area {
             flex: 1;
-            padding: 20px;
+            padding: 30px 20px;
             overflow: auto;
-            position: relative;
         }
         
-        .controls { margin-bottom: 20px; }
-        
         .bracket {
-            display: flex;
-            gap: 60px;
+            display: inline-flex;
+            gap: 50px;
             position: relative;
         }
         
         .round {
             display: flex;
             flex-direction: column;
-            gap: 70px;
+            gap: 45px;
             position: relative;
         }
         
-        .round-header {
-            text-align: center;
+        .round-label {
             color: var(--accent);
-            margin-bottom: 30px;
-            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1rem;
         }
         
         .match {
-            background: #16213e;
-            border: 3px solid var(--accent);
-            padding: 10px;
-            width: 220px;
             position: relative;
-            min-height: 92px;
+            width: 240px;
         }
         
         .player {
-            padding: 10px 12px;
-            margin: 4px 0;
             background: #1e2a4d;
+            border: 2px solid var(--accent);
+            padding: 12px 15px;
+            margin: 8px 0;
             cursor: pointer;
-            transition: 0.2s;
-            min-height: 32px;
-            display: flex;
-            align-items: center;
+            transition: all 0.2s;
+            position: relative;
         }
         
         .player:hover { background: #2a3a66; }
@@ -137,55 +128,54 @@
             background: var(--accent); 
             color: #0a0a1f; 
             font-weight: bold; 
+            border-color: #fff;
         }
         .player.bye { color: #7777aa; font-style: italic; }
         
-        .vs {
-            text-align: center;
-            color: #555;
-            font-size: 0.75rem;
-            padding: 2px;
-        }
-        
-        /* Connecting Lines */
-        .round:not(:last-child)::after {
+        /* Classic Bracket Lines */
+        .match::before,
+        .match::after {
             content: '';
             position: absolute;
-            top: 50%;
-            right: -30px;
-            width: 30px;
-            height: 2px;
             background: var(--accent);
-            opacity: 0.4;
+            opacity: 0.6;
         }
         
-        .match:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            right: -30px;
-            top: 50%;
-            width: 30px;
+        /* Horizontal lines */
+        .match::after {
             height: 2px;
-            background: var(--accent);
-            opacity: 0.4;
+            right: -50px;
+            top: 50%;
+            width: 50px;
+        }
+        
+        /* Vertical connectors */
+        .round:not(:last-child) .match:not(:last-child)::before {
+            width: 2px;
+            height: calc(50% + 45px);
+            right: -50px;
+            top: 50%;
         }
         
         .champion {
-            text-align: center;
             margin-top: 60px;
+            text-align: center;
             font-size: 2.8rem;
             color: var(--accent);
             text-shadow: 0 0 30px var(--accent);
         }
         
-        .empty-state { text-align: center; padding: 100px 20px; color: #666; }
+        .empty-state {
+            text-align: center;
+            padding: 120px 40px;
+            color: #555;
+        }
     </style>
 </head>
 <body>
     <header><h1>BRACKET BATTLE</h1></header>
     
     <div class="container">
-        <!-- Sidebar -->
         <div class="sidebar">
             <h2 style="color: var(--accent);">PARTICIPANTS</h2>
             
@@ -195,7 +185,7 @@
             
             <div style="display:flex; gap:8px;">
                 <button onclick="shuffleParticipants()" style="flex:1">SHUFFLE</button>
-                <button onclick="clearAll()" class="secondary-btn" style="flex:1; background:#444;">CLEAR</button>
+                <button onclick="clearAll()" style="flex:1; background:#444;">CLEAR</button>
             </div>
             
             <div class="participants-list" id="participants-list"></div>
@@ -205,16 +195,15 @@
             </button>
         </div>
         
-        <!-- Main Bracket Area -->
         <div class="main-area">
-            <div class="controls">
+            <div style="margin-bottom: 15px;">
                 <button onclick="resetTournament()" id="reset-btn" style="display:none">NEW TOURNAMENT</button>
                 <button onclick="undoLast()" id="undo-btn" style="display:none">UNDO LAST</button>
             </div>
             
             <div id="bracket-container">
                 <div class="empty-state">
-                    <h2>Add names on the left<br>and click GENERATE BRACKET</h2>
+                    <h2>Add names on the left<br>→ Click GENERATE BRACKET</h2>
                 </div>
             </div>
             
@@ -227,14 +216,12 @@
         let tournament = null;
 
         const input = document.getElementById('name-input');
-        input.addEventListener('keypress', e => {
-            if (e.key === 'Enter') addParticipant();
-        });
+        input.addEventListener('keypress', e => { if (e.key === 'Enter') addParticipant(); });
 
         function addParticipant() {
             const name = input.value.trim();
             if (!name) return;
-            if (participants.length >= 32) return alert("Max 32 players");
+            if (participants.length >= 32) return alert("Maximum 32 players");
             
             participants.push({ id: Date.now(), name });
             input.value = '';
@@ -244,16 +231,13 @@
         function renderParticipants() {
             const list = document.getElementById('participants-list');
             list.innerHTML = participants.length === 0 
-                ? '<div style="padding:30px;text-align:center;color:#666">No participants yet...</div>'
+                ? '<div style="padding:40px;text-align:center;color:#666">No participants yet...</div>'
                 : '';
             
             participants.forEach((p, i) => {
                 const div = document.createElement('div');
                 div.className = 'participant';
-                div.innerHTML = `
-                    <span>${p.name}</span>
-                    <button class="remove-btn" onclick="removeParticipant(${i})">X</button>
-                `;
+                div.innerHTML = `<span>${p.name}</span><button class="remove-btn" onclick="removeParticipant(${i})">X</button>`;
                 list.appendChild(div);
             });
         }
@@ -272,7 +256,7 @@
         }
 
         function clearAll() {
-            if (confirm("Clear all?")) {
+            if (confirm("Clear all participants?")) {
                 participants = [];
                 renderParticipants();
                 resetDisplay();
@@ -289,31 +273,18 @@
             
             while (active.length > 1) {
                 const matches = [];
-                const nextActive = [];
-                
                 for (let i = 0; i < active.length; i += 2) {
                     if (i + 1 < active.length) {
-                        matches.push({
-                            player1: active[i],
-                            player2: active[i+1],
-                            winner: null
-                        });
+                        matches.push({ player1: active[i], player2: active[i+1], winner: null });
                     } else {
-                        matches.push({
-                            player1: active[i],
-                            player2: {name: "BYE", bye: true},
-                            winner: active[i]
-                        });
-                        nextActive.push(active[i]);
+                        matches.push({ player1: active[i], player2: {name: "BYE", bye: true}, winner: active[i] });
                     }
                 }
-                
                 tournament.rounds.push({
                     name: getRoundName(tournament.rounds.length, shuffled.length),
                     matches
                 });
-                
-                active = nextActive.length ? nextActive : new Array(Math.ceil(active.length / 2)).fill(null);
+                active = active.length % 2 === 0 ? new Array(active.length / 2).fill(null) : [];
             }
             
             renderBracket();
@@ -322,11 +293,11 @@
         }
 
         function getRoundName(idx, total) {
-            const roundsLeft = Math.ceil(Math.log2(total)) - idx;
-            if (roundsLeft === 1) return "FINAL";
-            if (roundsLeft === 2) return "SEMI-FINALS";
-            if (roundsLeft === 3) return "QUARTER-FINALS";
-            return `ROUND ${idx+1}`;
+            const rLeft = Math.ceil(Math.log2(total)) - idx;
+            if (rLeft === 1) return "FINALS";
+            if (rLeft === 2) return "SEMIS";
+            if (rLeft === 3) return "QUARTERS";
+            return `ROUND ${idx + 1}`;
         }
 
         function renderBracket() {
@@ -340,28 +311,26 @@
                 const roundDiv = document.createElement('div');
                 roundDiv.className = 'round';
                 
-                const header = document.createElement('div');
-                header.className = 'round-header';
-                header.textContent = round.name;
-                roundDiv.appendChild(header);
+                const label = document.createElement('div');
+                label.className = 'round-label';
+                label.textContent = round.name;
+                roundDiv.appendChild(label);
                 
                 round.matches.forEach((match, mIdx) => {
                     const matchDiv = document.createElement('div');
                     matchDiv.className = 'match';
                     
-                    // Player 1
-                    const p1 = createPlayerEl(match.player1, match.winner === match.player1, () => pickWinner(rIdx, mIdx, 0));
-                    matchDiv.appendChild(p1);
-                    
+                    const p1 = createPlayer(match.player1, match.winner === match.player1, () => pickWinner(rIdx, mIdx, 0));
                     const vs = document.createElement('div');
-                    vs.className = 'vs';
+                    vs.style.textAlign = 'center';
+                    vs.style.color = '#555';
+                    vs.style.margin = '4px 0';
                     vs.textContent = 'VS';
+                    const p2 = createPlayer(match.player2, match.winner === match.player2, () => pickWinner(rIdx, mIdx, 1));
+                    
+                    matchDiv.appendChild(p1);
                     matchDiv.appendChild(vs);
-                    
-                    // Player 2
-                    const p2 = createPlayerEl(match.player2, match.winner === match.player2, () => pickWinner(rIdx, mIdx, 1));
                     matchDiv.appendChild(p2);
-                    
                     roundDiv.appendChild(matchDiv);
                 });
                 
@@ -369,26 +338,25 @@
             });
             
             container.appendChild(bracketDiv);
-            checkForChampion();
+            checkChampion();
         }
 
-        function createPlayerEl(player, isWinner, clickHandler) {
+        function createPlayer(player, isWinner, onClick) {
             const el = document.createElement('div');
             el.className = `player ${isWinner ? 'winner' : ''} ${player.bye ? 'bye' : ''}`;
             el.textContent = player.name;
-            if (!isWinner && !player.bye) el.onclick = clickHandler;
+            if (!isWinner && !player.bye) el.onclick = onClick;
             return el;
         }
 
-        function pickWinner(roundIdx, matchIdx, side) {
-            const match = tournament.rounds[roundIdx].matches[matchIdx];
+        function pickWinner(rIdx, mIdx, side) {
+            const match = tournament.rounds[rIdx].matches[mIdx];
             if (match.winner) return;
             
             match.winner = side === 0 ? match.player1 : match.player2;
             
-            // Advance to next round
-            if (roundIdx + 1 < tournament.rounds.length) {
-                const nextMatch = tournament.rounds[roundIdx + 1].matches[Math.floor(matchIdx / 2)];
+            if (rIdx + 1 < tournament.rounds.length) {
+                const nextMatch = tournament.rounds[rIdx + 1].matches[Math.floor(mIdx / 2)];
                 if (!nextMatch.player1) nextMatch.player1 = match.winner;
                 else nextMatch.player2 = match.winner;
             }
@@ -396,12 +364,12 @@
             renderBracket();
         }
 
-        function checkForChampion() {
-            if (!tournament?.rounds.length) return;
-            const final = tournament.rounds[tournament.rounds.length - 1].matches[0];
-            if (final?.winner) {
+        function checkChampion() {
+            if (!tournament) return;
+            const finalMatch = tournament.rounds[tournament.rounds.length - 1]?.matches[0];
+            if (finalMatch?.winner) {
                 document.getElementById('champion-display').innerHTML = `
-                    <div class="champion">🏆 CHAMPION 🏆<br>${final.winner.name}</div>`;
+                    <div class="champion">🏆 CHAMPION 🏆<br>${finalMatch.winner.name}</div>`;
                 document.getElementById('champion-display').style.display = 'block';
             }
         }
@@ -422,7 +390,7 @@
         function resetDisplay() {
             document.getElementById('bracket-container').innerHTML = `
                 <div class="empty-state">
-                    <h2>Add names on the left<br>and click GENERATE BRACKET</h2>
+                    <h2>Add names on the left<br>→ Click GENERATE BRACKET</h2>
                 </div>`;
             document.getElementById('champion-display').style.display = 'none';
             document.getElementById('reset-btn').style.display = 'none';
@@ -431,14 +399,14 @@
         }
 
         function resetTournament() {
-            if (confirm("Start completely new tournament?")) {
+            if (confirm("Start a new tournament?")) {
                 participants = [];
                 renderParticipants();
                 resetDisplay();
             }
         }
 
-        // Init
+        // Initialize
         renderParticipants();
     </script>
 </body>
