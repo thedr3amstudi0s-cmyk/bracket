@@ -116,6 +116,9 @@
             margin: 8px 0;
             cursor: pointer;
             transition: all 0.2s;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
         }
         
         .player:hover { background: #2a3a66; }
@@ -147,7 +150,7 @@
             opacity: 0.6;
             right: -50px;
             top: 50%;
-            height: calc(50% + 50px);
+            height: calc(50% + 55px);
         }
         
         .champion {
@@ -261,7 +264,6 @@
             
             while (currentPlayers.length > 1) {
                 const matches = [];
-                const nextRoundPlayers = [];
                 
                 for (let i = 0; i < currentPlayers.length; i += 2) {
                     if (i + 1 < currentPlayers.length) {
@@ -342,29 +344,41 @@
 
         function createPlayerEl(player, isWinner, onClick) {
             const el = document.createElement('div');
-            el.className = `player ${isWinner ? 'winner' : ''} ${player.bye ? 'bye' : ''}`;
+            el.className = 'player';
+            
+            if (!player) {
+                el.textContent = "???";
+                el.style.opacity = "0.3";
+                return el;
+            }
+            
+            if (isWinner) el.classList.add('winner');
+            if (player.bye) el.classList.add('bye');
+            
             el.textContent = player.name;
-            if (!isWinner && !player.bye) el.onclick = onClick;
+            
+            if (!isWinner && !player.bye) {
+                el.onclick = onClick;
+            }
+            
             return el;
         }
 
         function pickWinner(roundIdx, matchIdx, side) {
             const match = tournament.rounds[roundIdx].matches[matchIdx];
-            if (match.winner) return; // Already decided
+            if (match.winner) return;
             
             match.winner = side === 0 ? match.player1 : match.player2;
             
-            // Only advance to the NEXT round if it exists
+            // Advance winner only to the next round
             if (roundIdx + 1 < tournament.rounds.length) {
-                const nextRound = tournament.rounds[roundIdx + 1];
-                const nextMatchIndex = Math.floor(matchIdx / 2);
-                const nextMatch = nextRound.matches[nextMatchIndex];
-                
-                // Place winner in the correct slot
-                if (matchIdx % 2 === 0) {
-                    nextMatch.player1 = match.winner;
-                } else {
-                    nextMatch.player2 = match.winner;
+                const nextMatch = tournament.rounds[roundIdx + 1].matches[Math.floor(matchIdx / 2)];
+                if (nextMatch) {
+                    if (matchIdx % 2 === 0) {
+                        nextMatch.player1 = match.winner;
+                    } else {
+                        nextMatch.player2 = match.winner;
+                    }
                 }
             }
             
@@ -388,7 +402,6 @@
                     const match = tournament.rounds[r].matches[m];
                     if (match.winner) {
                         match.winner = null;
-                        // Clear the players in the next round that came from this match
                         if (r + 1 < tournament.rounds.length) {
                             const nextMatch = tournament.rounds[r + 1].matches[Math.floor(m / 2)];
                             if (nextMatch) {
@@ -419,7 +432,6 @@
             }
         }
 
-        // Init
         renderParticipants();
     </script>
 </body>
